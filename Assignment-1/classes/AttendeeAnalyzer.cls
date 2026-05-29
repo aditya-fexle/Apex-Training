@@ -25,39 +25,40 @@ public class AttendeeAnalyzer {
             AllSessions=new Set<String>();
         }
     }    
-    public static Result analyzeSessions(List<Attendee>AttendeeList){
-        Result res=new Result();
-        if(AttendeeList==null || AttendeeList.isEmpty()){
-            return res;
-        }
-        Map<String,Integer>sessioncountmap=new Map<String,Integer>();
-        //from this loop we count the number of people who attended a particular session like S1->3,S2->9
-        for(Attendee att:AttendeeList){
-            for(String session:att.sessionsAttended){
-                res.AllSessions.add(session);
-                if(sessioncountmap.containsKey(session)){
-                  sessioncountmap.put(session,sessioncountmap.get(session)+1)  ;
-                }
-                else{
-                    sessioncountmap.put(session,1);
-                }
-            }
-            
-        }
-        Integer totalAttendees=attendeeList.size();
-        for(String sessionId:sessioncountmap.keySet()){
-            Integer countAttendee=sessioncountmap.get(sessionId);
-            //this will give us the common sessions which all attendees attended
-            if(countAttendee==totalAttendees){
-               res.CommonSessions.add(sessionId);
-            }
-            //this will give us the unique session which is attended by only one attendee
-            if(countAttendee==1){
-                res.UniqueSessions.add(sessionId);
-            }
-        }
-        return res;
-    } 
+   public static Result analyzeSessions(List<Attendee> attendeeList) {
+    Result res = new Result();
+    if (attendeeList == null || attendeeList.isEmpty()) return res;
+
+    // Initialize common sessions with the first attendee
+    res.commonSessions.addAll(attendeeList[0].sessionsAttended);
+
+    // Keep track of any session seen more than once
+    Set<String> seenMoreThanOnce = new Set<String>();
+
+    for (Attendee att : attendeeList) {
+        Set<String> current = att.sessionsAttended;
+
+        // for all sessions
+        res.allSessions.addAll(current);
+
+        // For all Common session
+        res.commonSessions.retainAll(current);
+
+        // for unique sessions
+        // Finding what we have seen more than once
+        Set<String> overlap = new Set<String>(res.uniqueSessions);
+        overlap.retainAll(current); // These are now confirmed duplicates
+        seenMoreThanOnce.addAll(overlap);
+
+        
+        res.uniqueSessions.addAll(current);
+    }
+
+    // removing duplicate sessions
+    res.uniqueSessions.removeAll(seenMoreThanOnce);
+
+    return res;
+}
     
  public static void run(){
     
